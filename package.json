@@ -2,16 +2,16 @@
   "name": "chatbot-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "./api/bot.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel api -d dist",
-    "start": "node ./api/bot.js"
+    "dev": "nodemon server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@babel/node": "^7.24.6",
     "@google-ai/generativelanguage": "^2.5.0",
     "@google-cloud/aiplatform": "^3.21.0",
     "@google-cloud/storage": "^7.11.1",
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@babel/cli": "^7.24.6",
     "@babel/core": "^7.24.6",
-    "@babel/preset-env": "^7.24.6"
+    "@babel/preset-env": "^7.24.6",
+    "copyfiles": "^2.4.1"
   }
 }
