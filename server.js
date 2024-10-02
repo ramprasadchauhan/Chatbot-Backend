@@ -75,6 +75,8 @@ async function processAllFilesInDriveFolder(folderId, credentials) {
 // });
 
 // Endpoint to list files in the specified Google Drive folder
+
+
 app.post("/api/v1/list-files", async (req, res) => {
   const { client_email, private_key, folderId } = req.body;
   const credentials = { client_email, private_key };
@@ -236,34 +238,6 @@ app.post("/api/v1/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// app.post("/api/v1/uploadToDrive", upload.single("file"), async (req, res) => {
-//   const { client_email, private_key, folderId } = req.body;
-
-//   // Ensure that the private key has the proper format with newlines
-//   const formattedPrivateKey = private_key.replace(/\\n/g, '\n');
-
-//   const credentials = {
-//     client_email,
-//     private_key: formattedPrivateKey
-//   };
-
-//   try {
-//     // Log the formatted private key to ensure it's correct
-//     console.log("Formatted Private Key:", formattedPrivateKey);
-
-//     const driveFile = await uploadFileToDrive(req.file, credentials, folderId);
-
-//     res.json({
-//       message: "File uploaded to Google Drive successfully!",
-//       fileId: driveFile.id,
-//       fileName: driveFile.name,
-//     });
-//   } catch (error) {
-//     console.error("Error uploading file to Google Drive:", error);
-//     res.status(500).send("Error uploading file.");
-//   }
-// });
-
 app.post("/api/v1/uploadToDrive", upload.single("file"), async (req, res) => {
   const { client_email, private_key, folderId } = req.body;
 
@@ -282,7 +256,7 @@ app.post("/api/v1/uploadToDrive", upload.single("file"), async (req, res) => {
     // Upload the file to Google Drive
     const driveFile = await uploadFileToDrive(req.file, credentials, folderId);
 
-    // Unlink (delete) the file from the local system after successful upload
+    // Unlink(delete) the file from the local system after successful upload
     fs.unlink(req.file.path, (err) => {
       if (err) {
         console.error("Error deleting local file:", err);
