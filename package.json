@@ -1,11 +1,16 @@
 {
+  "engines": {
+    "node": "20.9.0"
+  },
   "name": "chatbot-backend",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "babel server.js drive.js -d dist",
+    "start:prod": "node dist/server.js"
   },
   "keywords": [],
   "author": "",

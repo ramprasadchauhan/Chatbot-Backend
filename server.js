@@ -1,3 +1,4 @@
+process.env.NODE_OPTIONS = "--openssl-legacy-provider";
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -42,36 +43,36 @@ async function processAllFilesInDriveFolder(folderId, credentials) {
 }
 
 // File Upload Endpoint
-app.post("/api/v1/upload", upload.single("file"), async (req, res) => {
-  const { client_email, private_key, folderId } = req.body;
-  const credentials = { client_email, private_key };
-  const file = req.file;
+// app.post("/api/v1/upload", upload.single("file"), async (req, res) => {
+//   const { client_email, private_key, folderId } = req.body;
+//   const credentials = { client_email, private_key };
+//   const file = req.file;
 
-  if (!file) {
-    return res.status(400).send("No file uploaded.");
-  }
+//   if (!file) {
+//     return res.status(400).send("No file uploaded.");
+//   }
 
-  const filePath = file.path;
-  try {
-    const driveFile = await uploadFileToDrive(file, credentials, folderId);
-    fs.unlinkSync(filePath); // Delete the temporary file after uploading to Drive
+//   const filePath = file.path;
+//   try {
+//     const driveFile = await uploadFileToDrive(file, credentials, folderId);
+//     fs.unlinkSync(filePath); // Delete the temporary file after uploading to Drive
 
-    const fileData = await processFileFromDrive(
-      driveFile.id,
-      driveFile.name,
-      credentials
-    );
-    combinedFileData.push(fileData); // Add new file data to combined data
+//     const fileData = await processFileFromDrive(
+//       driveFile.id,
+//       driveFile.name,
+//       credentials
+//     );
+//     combinedFileData.push(fileData); // Add new file data to combined data
 
-    res.json({
-      message: "File uploaded to Drive and processed successfully!",
-      data: fileData,
-    });
-  } catch (error) {
-    console.error("Error processing file:", error);
-    res.status(500).send("Error processing file.");
-  }
-});
+//     res.json({
+//       message: "File uploaded to Drive and processed successfully!",
+//       data: fileData,
+//     });
+//   } catch (error) {
+//     console.error("Error processing file:", error);
+//     res.status(500).send("Error processing file.");
+//   }
+// });
 
 // Endpoint to list files in the specified Google Drive folder
 app.post("/api/v1/list-files", async (req, res) => {
@@ -154,8 +155,8 @@ app.post("/api/v1/answer", async (req, res) => {
 
   const prompt = `Based on the following data, answer the question accurately and not more tahn 100 words:
   ${dataSummary
-    .map((file) => `\n\nFile: ${file.fileName}\nData: ${file.fileData}`)
-    .join("\n\n")}
+      .map((file) => `\n\nFile: ${file.fileName}\nData: ${file.fileData}`)
+      .join("\n\n")}
   \n\nQuestion: ${question}`;
 
   try {
@@ -199,6 +200,65 @@ async function generateGeminiResponse(prompt) {
     throw new Error("Error generating response");
   }
 }
+
+
+app.post("/api/v1/upload", upload.single("file"), async (req, res) => {
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send("No file uploaded.");
+  }
+
+  const filePath = file.path;
+
+  try {
+    // Use credentials from .env
+    const credentials = {
+      client_email: process.env.CLIENT_EMAIL,
+      private_key: process.env.PRIVATE_KEY,
+    };
+    const folderId = process.env.FOLDER_ID; // Folder where files will be uploaded
+
+    // Upload the file to Google Drive
+    const driveFile = await uploadFileToDrive(file, credentials, folderId);
+
+    // Optionally delete the local file after successful upload
+    fs.unlinkSync(filePath);
+
+    res.json({
+      message: "File uploaded to Google Drive successfully!",
+      fileId: driveFile.id,
+      fileName: driveFile.name,
+    });
+  } catch (error) {
+    console.error("Error uploading file to Google Drive:", error);
+    res.status(500).send("Error uploading file.");
+  }
+});
+
+app.post("/api/v1/uploadToDrive", upload.single("file"), async (req, res) => {
+  const { client_email, private_key, folderId } = req.body;
+  const credentials = { client_email, private_key };
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).send("No file uploaded.");
+  }
+
+  try {
+    // Upload the file to Google Drive
+    const driveFile = await uploadFileToDrive(file, credentials, folderId);
+
+    res.json({
+      message: "File uploaded to Google Drive successfully!",
+      fileId: driveFile.id,
+      fileName: driveFile.name,
+    });
+  } catch (error) {
+    console.error("Error uploading file to Google Drive:", error);
+    res.status(500).send("Error uploading file.");
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
